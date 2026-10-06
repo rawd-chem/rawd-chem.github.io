@@ -373,7 +373,7 @@ h1{font-size:30px}h2{font-size:23px}h3{font-size:19px}
 .list{padding:4px 14px}
 .lrow2{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);border-radius:10px}.lrow2:last-child{border-bottom:0}
 .lrow2 .rk{font-weight:800;color:var(--violet)}.lrow2 .nm{font-weight:700}
-.about{display:grid;gap:12px;justify-items:center;text-align:center}.about img{width:180px;height:auto}.about h1{font-size:24px}.about p{color:var(--muted);line-height:1.8}
+.about{display:grid;gap:12px;justify-items:center;text-align:center}.about-vid{width:100%;margin-top:6px}.about-vid.tall{aspect-ratio:9/16;max-width:340px;justify-self:center}.about img{width:180px;height:auto}.about h1{font-size:24px}.about p{color:var(--muted);line-height:1.8}
 .sol .btn{min-height:46px}
 @media (max-width:380px){h1,.hero-card h1,.login-card h1{font-size:26px}.skill{grid-template-columns:48px 1fr auto;padding:10px 12px}.skill-art{width:48px;height:48px}.skill-art img{width:36px;height:36px}.stats3 b{font-size:22px}}
 .fb.ex{background:var(--surface2,#F1F3FA);color:var(--ink,#0B1F4B);white-space:pre-line;line-height:1.8}
@@ -792,7 +792,12 @@ function aboutView(){
   return `${st?`<button class="backlink" data-act="profile">${ICON('back',18)} العودة إلى ملفي</button>`:`<button class="backlink" data-act="home">${ICON('back',18)} العودة</button>`}
   <section class="card about"><img src="${IMG.logo}" alt="رَود">
     <h1>رَود — ذرة تصنع فرقًا</h1>
-    <p>رَود منصة تعليمية شخصية تساعد الطالبة على استعادة المهارات التي تحتاجها، وتنمية مهاراتها من خلال مسارات علاجية وإثرائية مخصصة.</p></section>`;
+    <p>رَود منصة تعليمية شخصية تساعد الطالبة على استعادة المهارات التي تحتاجها، وتنمية مهاراتها من خلال مسارات علاجية وإثرائية مخصصة.</p>${aboutVideo()}</section>`;
+}
+function aboutVideo(){ const u=settings().aboutVideo, id=ytId(u); if(!id) return '';
+  const tall=/\/shorts\//.test(u||'');
+  return IN_CLAUDE ? `<a class="btn primary" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">${ICON('video',18)} شاهدي الفيديو التعريفي</a>`
+    : `<div class="video about-vid${tall?' tall':''}"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0" title="الفيديو التعريفي لمنصة رَود" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
 }
 
 function findStudents(q){
@@ -1169,6 +1174,7 @@ function tSettings(){
       ${S.mode==='claude'?`<p class="muted" style="font-size:14px">داخل Claude تدخلين لوحة المعلمة بحسابك مباشرة دون كلمة سر.</p><input type="hidden" id="setPin" value="${esc(s.pin)}">`:`<label class="f" for="setPin">اسم دخول المعلمة<small>اكتبيه في خانة اسم الطالبة في الصفحة الرئيسية لتُفتح لوحة المعلمة.</small><input class="in" id="setPin" value="${esc(s.pin)}" autocomplete="off"></label>`}
       <label class="f" for="setPass">نسبة اجتياز الاختبار (%)<input class="in num" id="setPass" type="number" min="10" max="100" value="${s.passMark}"><small>66% تعني إجابتين صحيحتين من ثلاثة أسئلة.</small></label>
       <div class="checks"><label><input type="checkbox" id="setSeq" ${s.sequential?'checked':''}> الدروس العلاجية بالترتيب: لا يُفتح الدرس إلا بعد اجتياز السابق</label></div>
+      <label class="f" for="setVid">الفيديو التعريفي (صفحة «عن رَود»)<small>الصقي رابط يوتيوب، واتركيه فارغًا لإخفاء الفيديو.</small><input class="in" id="setVid" value="${esc(s.aboutVideo||'')}" dir="ltr" placeholder="https://youtu.be/..." autocomplete="off"></label>
       <button class="btn primary" type="submit">حفظ الإعدادات</button></form>
     <div class="panel stack"><h3>التخزين</h3><p class="muted">${modeTxt}</p>
       <label class="f" for="bk">نسخة احتياطية (JSON)<small>انسخي البيانات لنقلها إلى نسخة أخرى من المنصة، أو الصقي نسخة سابقة ثم «استيراد».</small><textarea class="in" id="bk" style="min-height:120px;font-size:12px;direction:ltr"></textarea></label>
@@ -1461,7 +1467,7 @@ document.addEventListener('submit',async ev=>{
     for(const inp of f.querySelectorAll('[data-exs]')){ const v=inp.value.trim(); if(!v) continue; const s=S.data.students[inp.dataset.exs]; const d=JSON.parse(JSON.stringify(s)); delete d.id;
       const ex=storedExams(s).filter(e=>norm(e.ch)!==norm(ch)); const oldE=storedExams(s).find(e=>norm(e.ch)===norm(ch)); ex.push({ch,score:v,max:max||oldE?.max||'',at:Date.now()}); d.exams=ex; d.tested=true; if(await save('students',s.id,d)) n++; }
     closeModal(); toast(`رُصدت ${n} درجة`); }
-  if(k==='settings'){ const pin=$('#setPin').value.trim(); const pm=Math.min(100,Math.max(10,+$('#setPass').value||66)); if(!pin){ toast('اكتبي كلمة سر'); return; } if(await save('settings','main',{pin,passMark:pm,sequential:$('#setSeq').checked})) toast('حُفظت الإعدادات'); }
+  if(k==='settings'){ const pin=$('#setPin').value.trim(); const pm=Math.min(100,Math.max(10,+$('#setPass').value||66)); if(!pin){ toast('اكتبي كلمة سر'); return; } const vid=$('#setVid').value.trim(); if(vid&&!ytId(vid)){ toast('رابط الفيديو غير صحيح'); return; } if(await save('settings','main',{pin,passMark:pm,sequential:$('#setSeq').checked,aboutVideo:vid})) toast('حُفظت الإعدادات'); }
 });
 
 /* ---------- demo data (local trial mode only) ---------- */
