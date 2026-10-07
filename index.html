@@ -722,7 +722,7 @@ function lessonState(l,p){ const v=p[l.id]||{}; if(v.passed) return {k:'done',t:
 function sciIcon(l){ const t=(l.title||'')+' '+(l.skill||'');
   const M=[[/بور|مدار|الميكانيكي الكمي/,'orbit'],[/طاقة|مسائل|احسب|مولار|مولال|النسبة|الجامعة/,'bulb'],[/موج|طيف|ألوان|ريدبرج/,'wave'],[/فوتون|ضوء|ذرة|التوزيع|إلكترون|الغاز النبيل|الكروم|الكرة/,'atom'],[/البيانات|الرسم|بياني/,'chart'],[/بحث|اكتشاف|فرضية|نظرية|فروع|المفكّرة/,'scope'],[/أوزون|CFC|السلامة|مختبر|تجرب|المتغيرات|مخاليط|محاليل|ذوبان|ذائبية|المادة|الكتلة/,'flask'],[/أسئلة|حياتي/,'book']];
   for(const [re,k] of M) if(re.test(t)) return k; return l.type==='enrich'?'star':l.type==='tahsili'?'target':'atom'; }
-function titleParts(l){ const m=(l.title||'').match(/^((?:الفيديو|التحدي|النشاط|الوحدة|الدرس)\s*[0-9٠-٩]+)\s*[:：]\s*(.+)$/);
+function titleParts(l){ const m=(l.title||'').match(/^((?:الفيديو|التحدي|النشاط|الوحدة|الدرس)\s*[0-9٠-٩]+(?:-[0-9٠-٩]+)?)\s*[:：]\s*(.+)$/);
   return m?{cap:m[1],t:m[2]}:{cap:l.type==='tahsili'&&l.order?'الوحدة '+l.order:'',t:l.title||''}; }
 function skillCard(l,st,locked){ const p=prog(st.id).lessons||{}, s=lessonState(l,p), isLock=locked.has(l.id), tp=titleParts(l);
   return `<article class="skill ${isLock?'locked':''} ${s.k}">
