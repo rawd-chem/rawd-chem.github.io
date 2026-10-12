@@ -562,7 +562,7 @@ function assigned(st){
     remedial: L.filter(l=>l.type==='remedial' && +l.grade===+st.grade && (st.test||weak.has(norm(l.skill))) && isLive(l,st)),
     tahsili: L.filter(l=>l.type==='tahsili' && (+l.grade===0 || +l.grade===+st.grade) && isLive(l,st)),
     exam: L.filter(l=>examFor(l,st) && (l.quiz||[]).length),
-    enrich: (st.excellent||st.enrichOn||st.test) ? L.filter(l=>l.type==='enrich' && (+l.grade===0 || +l.grade===+st.grade) && isLive(l,st)) : [],
+    enrich: (st.excellent||st.enrichOn||st.test) ? L.filter(l=>l.type==='enrich' && (+l.grade===0 || +l.grade===+st.grade) && isLive(l,st) && (st.test || !(l.forIds||[]).length || l.forIds.includes(st.id))) : [],
   };
 }
 function statsOf(st){
@@ -599,6 +599,14 @@ function skillsFor(grade){
 
 /* ---------- storage adapters ---------- */
 const Store = { async set(c,id,d){}, async del(c,id){} };
+/* ---------- scheduled releases: prepared data becomes visible when this version is published ---------- */
+const RELEASED=['g2ch2'];
+function relFix(){
+  for(const l of Object.values(S.data.lessons||{})) if(l.rel&&RELEASED.includes(l.rel)&&!l.relDone){ l.draft=false; if(!l.skill&&l.skillPending) l.skill=l.skillPending; l.relDone=true; }
+  for(const s of Object.values(S.data.students||{})){ if(s.relDone) continue;
+    if((s.weakPending||[]).length){ const have=new Set((s.weaknesses||[]).map(norm)); s.weaknesses=[...(s.weaknesses||[]),...s.weakPending.filter(w=>!have.has(norm(w)))]; }
+    if((s.examsPending||[]).length){ const have=new Set((s.exams||[]).map(e=>norm(e.ch))); s.exams=[...(s.exams||[]),...s.examsPending.filter(e=>!have.has(norm(e.ch)))]; }
+    if(s.weakPending||s.examsPending) s.relDone=true; } }
 function applySnap(c,map){ S.data[c]=map; scheduleRender(); }
 
 async function bootClaude(){
@@ -751,7 +759,7 @@ function bottomNav(){
   return `<nav class="bnav${assigned(st).tahsili.length?' n5':''}" aria-label="التنقل">${it('home','home','الرئيسية',sc==='student')}${it('plan','plan','خطتي',sc==='plan')}${assigned(st).tahsili.length?it('tahsili','target','التحصيلي',sc==='tahsili'):''}${it('board','trophy','لوحة الشرف',sc==='board')}${it('profile','user','ملفي',['profile','messages','achievements','about'].includes(sc))}</nav>`;
 }
 function render(){
-  pending=false;
+  pending=false; relFix();
   const v=S.v, el=document.getElementById('app');
   const st = v.sid && S.data.students[v.sid];
   if(v.sid && !st && S.mode!=='loading'){ v.sid=null; v.screen='home'; }
@@ -1442,7 +1450,7 @@ document.addEventListener('submit',async ev=>{
   if(k==='enter'){ if(norm(S.v.nameDraft) && norm(S.v.nameDraft)===norm(settings().pin)){ Object.assign(S.v,{nameDraft:'',matches:null,sid:null,screen:'teacher',teacher:S.mode!=='claude'}); render(); return; }
     const m=findStudents(S.v.nameDraft); if(m.length===1){ Object.assign(S.v,{sid:m[0].id,screen:'student',matches:null}); } else S.v.matches=m; render(); }
   if(k==='pin'){ if(norm($('#pinIn').value)===norm(settings().pin)){ S.v.teacher=true; S.v.pinErr=false; S.v.screen='teacher'; } else S.v.pinErr=true; render(); }
-  if(k==='student'){ const id=f.dataset.id||rid(); const old=S.data.students[id]||{}; const d={name:$('#sName').value.trim().replace(/\s+/g,' '),grade:+$('#sGrade').value,weaknesses:[...$('#sSkills').querySelectorAll('input:checked')].map(i=>i.value),excellent:$('#sExc').checked,enrichOn:$('#sEnr').checked,enrichAfterPlan:$('#sAfter').checked,tested:$('#sTested').checked||$('#sExc').checked||$('#sSkills').querySelectorAll('input:checked').length>0,score:$('#sScore').value.trim(),note:$('#sNote').value.trim(),messages:old.messages||[],createdAt:old.createdAt||Date.now()};
+  if(k==='student'){ const id=f.dataset.id||rid(); const old=S.data.students[id]||{}; const keepS={...old}; delete keepS.id; const d={...keepS,name:$('#sName').value.trim().replace(/\s+/g,' '),grade:+$('#sGrade').value,weaknesses:[...$('#sSkills').querySelectorAll('input:checked')].map(i=>i.value),excellent:$('#sExc').checked,enrichOn:$('#sEnr').checked,enrichAfterPlan:$('#sAfter').checked,tested:$('#sTested').checked||$('#sExc').checked||$('#sSkills').querySelectorAll('input:checked').length>0,score:$('#sScore').value.trim(),note:$('#sNote').value.trim(),messages:old.messages||[],createdAt:old.createdAt||Date.now()};
     if(!d.name) return; if(await save('students',id,d)){ closeModal(); toast('حُفظت بيانات الطالبة'); } }
   if(k==='bulk'){ const g=+$('#bGrade').value; const names=[...new Set($('#bNames').value.split('\n').map(s=>s.replace(/^[\d\s.\-)]+/,'').trim().replace(/\s+/g,' ')).filter(Boolean))]; const exists=new Set(students().map(s=>norm(s.name))); let n=0;
     for(const nm of names){ if(exists.has(norm(nm))) continue; if(await save('students',rid(),{name:nm,grade:g,weaknesses:[],excellent:false,tested:false,score:'',messages:[],createdAt:Date.now()})) n++; }
