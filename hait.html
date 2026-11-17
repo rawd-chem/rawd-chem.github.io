@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>حائط خارطة الطريق</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6EFE2;--ink:#0E1A3A;--co:#C4412B;--te:#0B7A70;--vi:#5238C9;--am:#FFB92E;--card:#FFFBF3;--line:#E4D8C0}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Tajawal',Tahoma,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+button,input,select,textarea{font-family:inherit;font-size:16px}
+header{background:var(--ink);color:#FFFBF3;padding:14px 18px;display:flex;align-items:center;gap:12px}
+header h1{font-size:22px;font-weight:800;flex:1}
+header small{display:block;font-size:13px;color:#FFE08A;font-weight:700}
+.road{height:6px;background:linear-gradient(90deg,var(--am),var(--te),var(--vi),var(--co))}
+.tabs{display:flex;gap:8px;padding:12px;overflow-x:auto;scrollbar-width:none}
+.tab{flex:none;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 16px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tab.on{color:#fff;border-color:transparent}
+main{max-width:980px;margin:0 auto;padding:0 12px 40px}
+.ask{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:16px;margin-bottom:16px}
+.ask h2{font-size:20px;font-weight:800;margin-bottom:4px}
+.ask p{color:#4B5578;font-size:15px;margin-bottom:10px;line-height:1.6}
+.ask label{display:block;font-weight:700;font-size:14px;margin:8px 0 4px}
+.ask input[type=text],.ask select,.ask textarea{width:100%;border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff}
+.ask textarea{min-height:90px;resize:vertical}
+.photo{display:flex;align-items:center;gap:10px;margin-top:8px}
+.photo label.btn{margin:0;background:#EFE8D6;border-radius:14px;padding:9px 14px;cursor:pointer;font-weight:700}
+.photo img{height:54px;border-radius:8px}
+.send{margin-top:12px;width:100%;border:0;border-radius:16px;padding:13px;color:#fff;font-weight:800;font-size:18px;cursor:pointer}
+.send:disabled{opacity:.6}
+.msg{margin-top:8px;font-weight:700;font-size:14px;min-height:18px}
+.grid{columns:260px;column-gap:14px}
+.note{break-inside:avoid;margin-bottom:14px;border-radius:18px;padding:14px 16px;background:var(--card);border:2px solid var(--line);position:relative;box-shadow:0 3px 0 rgba(14,26,58,.06)}
+.note .who{font-size:13px;font-weight:800;margin-bottom:6px}
+.note .tx{font-size:17px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.note img{width:100%;border-radius:12px;margin-top:8px;cursor:zoom-in}
+.note .ft{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.heart{border:0;background:#fff;border-radius:999px;padding:4px 12px;font-weight:800;cursor:pointer;border:1.5px solid var(--line)}
+.heart.on{background:#FFE6DF;border-color:#F4B7A9}
+.del{position:absolute;top:8px;left:8px;border:0;background:#fff;border-radius:50%;width:28px;height:28px;cursor:pointer;display:none}
+body.admin .del{display:block}
+.empty{text-align:center;color:#8C90A8;padding:30px;font-weight:700}
+.cloud{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:22px;padding:24px;min-height:200px}
+.cloud span{font-weight:800;line-height:1.1}
+#zoom{position:fixed;inset:0;background:rgba(14,26,58,.85);display:none;align-items:center;justify-content:center;z-index:9;padding:20px}
+#zoom img{max-width:100%;max-height:100%;border-radius:14px}
+/* screen mode */
+body.screen header h1{font-size:34px}
+body.screen .ask{display:none}
+body.screen .tab{font-size:20px;padding:10px 22px}
+body.screen main{max-width:none;padding:0 28px 30px}
+body.screen .grid{columns:340px}
+body.screen .note .tx{font-size:24px}
+body.screen .note .who{font-size:17px}
+.join{display:none;align-items:center;gap:12px;background:#FFFBF3;color:var(--ink);border-radius:16px;padding:8px 12px}
+.join b{font-size:16px;line-height:1.3}
+.join svg{width:96px;height:96px}
+body.screen .join{display:flex}
+.mode{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:8px 12px;cursor:pointer;font-weight:700}
+body.screen .mode{display:none}
+.count{font-size:15px;color:#4B5578;font-weight:700;margin:4px 2px 12px}
+body.screen .count{font-size:20px}
+.clouds{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}.clouds h3{margin:0 0 8px;font-size:18px;font-weight:800;color:#0E1A3A;text-align:center}body.screen .clouds h3{font-size:28px}
+</style></head><body>
+<header><div style="flex:1"><h1>حائط خارطة الطريق</h1><small>من التعثّر إلى التميّز</small></div>
+<button class="mode" id="toScreen">عرض على الشاشة</button>
+<div class="join"><b>امسحي<br>وشاركي</b><svg xmlns="http://www.w3.org/2000/svg" width="198" height="198" class="segno"><g transform="scale(6)"><path fill="#fff" d="M0 0h33v33h-33z"/><path class="qrline" stroke="#0e1a3a" d="M2 2.5h7m1 0h1m1 0h3m1 0h1m2 0h1m4 0h7m-29 1h1m5 0h1m1 0h3m2 0h1m2 0h1m2 0h2m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m3 0h1m2 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m5 0h1m1 0h4m1 0h2m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m2 0h1m2 0h1m1 0h4m2 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m2 0h4m3 0h1m1 0h1m3 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h2m2 0h2m1 0h1m1 0h2m-20 1h1m2 0h6m3 0h2m1 0h1m1 0h5m2 0h1m1 0h3m-26 1h3m3 0h1m3 0h3m1 0h3m4 0h1m1 0h2m-28 1h2m4 0h1m2 0h2m1 0h2m1 0h1m6 0h3m1 0h1m-26 1h1m1 0h1m3 0h1m1 0h1m3 0h1m2 0h3m2 0h2m1 0h2m2 0h1m-29 1h2m4 0h1m3 0h4m2 0h1m3 0h1m1 0h2m4 0h1m-28 1h1m1 0h1m1 0h1m4 0h2m1 0h6m3 0h7m-28 1h1m1 0h2m1 0h1m3 0h2m1 0h1m1 0h2m1 0h6m2 0h1m1 0h1m-29 1h1m1 0h1m2 0h1m5 0h2m2 0h1m3 0h1m1 0h1m1 0h2m1 0h1m1 0h1m-29 1h1m1 0h1m1 0h3m1 0h1m1 0h1m3 0h1m5 0h1m4 0h1m-26 1h2m1 0h1m4 0h4m1 0h4m1 0h3m3 0h1m1 0h2m-28 1h3m2 0h4m1 0h2m3 0h2m2 0h3m2 0h2m2 0h1m-29 1h2m1 0h2m3 0h5m1 0h1m1 0h1m7 0h3m-27 1h3m2 0h3m4 0h4m1 0h2m1 0h8m-20 1h1m1 0h1m1 0h1m1 0h2m1 0h2m1 0h1m3 0h2m-26 1h7m1 0h5m1 0h3m2 0h2m1 0h1m1 0h2m-26 1h1m5 0h1m1 0h1m1 0h3m1 0h1m1 0h2m2 0h1m3 0h1m2 0h2m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h4m1 0h1m2 0h7m2 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m1 0h1m2 0h4m1 0h2m6 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m2 0h3m2 0h1m1 0h2m1 0h2m1 0h3m-29 1h1m5 0h1m2 0h1m1 0h1m4 0h1m1 0h1m2 0h2m2 0h2m1 0h1m-29 1h7m1 0h2m3 0h3m3 0h2m2 0h3"/></g></svg>
+</div></header>
+<div class="road"></div>
+<div class="tabs" id="tabs"></div>
+<main><div class="ask" id="ask"></div><div class="count" id="count"></div><div id="wall"></div></main>
+<div id="zoom"><img alt=""></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const CFG={apiKey:"AIzaSyA8feIuu619z53rYQ4soTE15E0wD2x4k1k",authDomain:"chem-labs-3c9de.firebaseapp.com",projectId:"chem-labs-3c9de",storageBucket:"chem-labs-3c9de.firebasestorage.app",messagingSenderId:"396927110815",appId:"1:396927110815:web:e569138e0fca5e94b39caa"};
+const COL='khareta_wall';
+const GROUPS=['الخوارزمي','ابن الهيثم','الرازي','ابن سينا','ابن خلدون','فاطمة الفهرية','البيروني'];
+const SEC={
+ open:{t:'توقّعات وآمال',c:'#E0A21B',h:'توقّعاتك وآمالك',p:'أجيبي بكلمة أو كلمتين، وتظهر إجابات الجميع سحابةً على الشاشة.',two:1,cloud:1},
+ cases:{t:'حالات المجموعات',c:'#C4412B',h:'إجابة مجموعتك',p:'صوّري جدول ورقة العمل ٤ وارفعيه، أو اكتبي: المهارة، الهدف، الاستراتيجيتين.',ph:'المهارة المتعثرة… الهدف… الاستراتيجيتان…',lbl:'رقم المجموعة (اختياري)',photo:1},
+ chal:{t:'تحديات إثرائية',c:'#5238C9',h:'تحدّيك',p:'اكتبي السؤال العادي، ثم التحدّي الذي صعدتِ به. أعطي ❤️ لأجمل تحدٍّ.',ph:'السؤال: …\nالتحدّي: …',photo:1},
+ exit:{t:'بطاقة الخروج',c:'#0B7A70',h:'سأطبّق غدًا…',p:'أكملي: «سأطبّق غدًا في صفّي…»',ph:'سأطبّق غدًا…'}
+};
+const qs=new URLSearchParams(location.search);
+let cur=qs.get('s')&&SEC[qs.get('s')]?qs.get('s'):'open';
+if(qs.has('screen'))document.body.classList.add('screen');
+if(qs.has('admin'))document.body.classList.add('admin');
+const $=id=>document.getElementById(id);
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let db=null,unsub=null,photo=null;
+try{firebase.initializeApp(CFG);db=firebase.firestore();}catch(e){}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+function tabs(){$('tabs').innerHTML=Object.entries(SEC).map(([k,s])=>`<button class="tab${k===cur?' on':''}" style="${k===cur?'background:'+s.c:''}" data-k="${k}">${s.t}</button>`).join('');
+ [...$('tabs').children].forEach(b=>b.onclick=()=>{cur=b.dataset.k;const u=new URL(location);u.searchParams.set('s',cur);history.replaceState(null,'',u);render();});}
+function ask(){const s=SEC[cur];photo=null;
+ $('ask').innerHTML=`<h2 style="color:${s.c}">${s.h}</h2><p>${s.p}</p>
+ ${s.grp?`<label>المجموعة</label><select id="fg">${GROUPS.map(g=>`<option>${g}</option>`).join('')}</select>`:`<label>${s.lbl||'اسمك (اختياري)'}</label><input type="text" id="fn" maxlength="40" value="${s.lbl?'':esc(store('wall_name')||'')}" placeholder="${s.lbl?'مثلًا: ١':''}">`}
+ ${s.two?`<label>ماذا تتوقعين أن تتعلمي؟</label><input type="text" id="ft" maxlength="25" placeholder="كلمة أو كلمتان…"><label>وماذا تأملين؟</label><input type="text" id="ft2" maxlength="25" placeholder="كلمة أو كلمتان…">`:`<label>${s.cloud?'كلمتك':'مشاركتك'}</label>${s.cloud?`<input type="text" id="ft" maxlength="25" placeholder="${s.ph}">`:`<textarea id="ft" maxlength="600" placeholder="${s.ph}"></textarea>`}`}
+ ${s.photo?`<div class="photo"><label class="btn">📷 أضيفي صورة<input type="file" id="fp" accept="image/*" hidden></label><img id="fpv" alt="" hidden></div>`:''}
+ <button class="send" id="fs" style="background:${s.c}">أرسلي إلى الحائط</button><div class="msg" id="fm"></div>`;
+ if(s.photo)$('fp').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('fm').textContent='جارٍ تجهيز الصورة…';photo=await shrink(f);$('fpv').src=photo;$('fpv').hidden=false;$('fm').textContent='';};
+ $('fs').onclick=send;}
+function shrink(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{let w=im.width,h=im.height;const M=1100;if(Math.max(w,h)>M){const k=M/Math.max(w,h);w=Math.round(w*k);h=Math.round(h*k);}
+ const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);let q=.7,d=c.toDataURL('image/jpeg',q);while(d.length>700000&&q>.3){q-=.1;d=c.toDataURL('image/jpeg',q);}res(d);};im.src=r.result;};r.readAsDataURL(file);});}
+async function send(){const s=SEC[cur];let t=($('ft').value||'').trim(),t2=s.two?($('ft2').value||'').trim():'';if(s.two&&!t&&!t2){$('fm').textContent='اكتبي إجابتك أولًا';return;}if(!s.two&&!t&&!photo){$('fm').textContent='اكتبي مشاركتك أولًا';return;}
+ if(!db){$('fm').textContent='تعذّر الاتصال، تأكدي من الإنترنت';return;}
+ let who=s.grp?$('fg').value:(($('fn')&&$('fn').value.trim())||'');if(!s.grp&&!s.lbl&&who)store('wall_name',who);if(s.lbl&&/^[0-9٠-٩]+$/.test(who))who='المجموعة '+who;
+ $('fs').disabled=true;$('fm').textContent='جارٍ الإرسال…';
+ try{await db.collection(COL).add({s:cur,t:s.two?t:(s.cloud?t.split(/\s+/)[0]:t),t2,who,img:photo||'',likes:0,at:firebase.firestore.FieldValue.serverTimestamp()});
+  $('ft').value='';if($('ft2'))$('ft2').value='';photo=null;if($('fpv'))$('fpv').hidden=true;$('fm').style.color=s.c;$('fm').textContent='وصلت مشاركتك ✓';}
+ catch(e){$('fm').style.color='#C4412B';$('fm').textContent='لم تُرسل، حاولي مرة ثانية';}
+ $('fs').disabled=false;}
+function norm(w){return w.replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة$/,'ه').replace(/^ال/,'').trim();}
+function draw(docs){const s=SEC[cur];$('count').textContent=docs.length?`${docs.length} مشاركة`:'';
+ if(!docs.length){$('wall').innerHTML='<div class="empty">الحائط ينتظر أول مشاركة ✨</div>';return;}
+ if(s.cloud){const scr=document.body.classList.contains('screen');const cols=['#C4412B','#0B7A70','#5238C9','#E0A21B','#0E1A3A'];
+  const cl=f=>{const m={};docs.forEach(d=>{const w=(d[f]||'').trim();if(!w)return;const k=norm(w);if(!m[k])m[k]={w,n:0};m[k].n++;});const arr=Object.values(m).sort((a,b)=>b.n-a.n);const mx=arr[0]?arr[0].n:1;
+   return arr.length?`<div class="cloud">${arr.map((o,i)=>`<span style="font-size:${(scr?(s.two?24:30):(s.two?17:20))+Math.round((o.n/mx)*(scr?(s.two?50:70):(s.two?26:36)))}px;color:${cols[i%cols.length]}">${esc(o.w)}</span>`).join('')}</div>`:'<div class="cloud" style="color:#8a8fa3;font-size:16px">بانتظار الإجابات…</div>';};
+  $('wall').innerHTML=s.two?`<div class="clouds"><div><h3>ماذا تتوقعين أن تتعلمي؟</h3>${cl('t')}</div><div><h3>ماذا تأملين؟</h3>${cl('t2')}</div></div>`:cl('t');return;}
+ const liked=JSON.parse(store('wall_likes')||'[]');
+ $('wall').innerHTML='<div class="grid">'+docs.map((d,i)=>{const gi=GROUPS.indexOf(d.who);const bg=['#FFE6DF','#DDF4F0','#ECE8FF','#FFF1CF'][(gi>=0?gi:i)%4];
+  return `<div class="note" style="background:${bg}"><button class="del" data-id="${d.id}" title="حذف">✕</button>${d.who?`<div class="who" style="color:${s.c}">${esc(d.who)}</div>`:''}${d.t?`<div class="tx">${esc(d.t)}</div>`:''}${d.img?`<img src="${d.img}" alt="صورة المشاركة">`:''}
+  <div class="ft"><span></span><button class="heart${liked.includes(d.id)?' on':''}" data-id="${d.id}">❤️ ${d.likes||0}</button></div></div>`;}).join('')+'</div>';
+ $('wall').querySelectorAll('.heart').forEach(b=>b.onclick=()=>like(b.dataset.id));
+ $('wall').querySelectorAll('.del').forEach(b=>b.onclick=()=>{if(confirm('حذف هذه المشاركة؟'))db.collection(COL).doc(b.dataset.id).delete();});
+ $('wall').querySelectorAll('.note img').forEach(im=>im.onclick=()=>{$('zoom').querySelector('img').src=im.src;$('zoom').style.display='flex';});}
+function like(id){const L=JSON.parse(store('wall_likes')||'[]');const on=L.includes(id);
+ db.collection(COL).doc(id).update({likes:firebase.firestore.FieldValue.increment(on?-1:1)});
+ store('wall_likes',JSON.stringify(on?L.filter(x=>x!==id):[...L,id]));}
+$('zoom').onclick=()=>$('zoom').style.display='none';
+$('toScreen').onclick=()=>{const u=new URL(location);u.searchParams.set('screen','1');u.searchParams.set('s',cur);location.href=u;};
+function render(){tabs();ask();if(unsub)unsub();if(!db){$('wall').innerHTML='<div class="empty">تعذّر الاتصال بالحائط، تأكدي من الإنترنت</div>';return;}
+ const sec=cur;unsub=db.collection(COL).where('s','==',sec).onSnapshot(q=>{if(sec!==cur)return;const docs=q.docs.map(d=>({id:d.id,...d.data()}));
+  docs.sort((a,b)=>((b.at&&b.at.seconds)||9e9)-((a.at&&a.at.seconds)||9e9));draw(docs);},()=>{$('wall').innerHTML='<div class="empty">تعذّر تحميل الحائط</div>';});}
+render();
+</script>
+</body></html>
