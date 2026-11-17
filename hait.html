@@ -80,7 +80,7 @@ const SEC={
  open:{t:'توقّعات وآمال',c:'#E0A21B',h:'توقّعاتك وآمالك',p:'أجيبي بكلمة أو كلمتين، وتظهر إجابات الجميع سحابةً على الشاشة.',two:1,cloud:1},
  cases:{t:'حالات المجموعات',c:'#C4412B',h:'إجابة مجموعتك',p:'صوّري جدول ورقة العمل ٤ وارفعيه، أو اكتبي: المهارة، الهدف، الاستراتيجيتين.',ph:'المهارة المتعثرة… الهدف… الاستراتيجيتان…',lbl:'رقم المجموعة (اختياري)',photo:1},
  chal:{t:'تحديات إثرائية',c:'#5238C9',h:'تحدّيك',p:'اكتبي السؤال العادي، ثم التحدّي الذي صعدتِ به. أعطي ❤️ لأجمل تحدٍّ.',ph:'السؤال: …\nالتحدّي: …',photo:1},
- exit:{t:'بطاقة الخروج',c:'#0B7A70',h:'سأطبّق غدًا…',p:'أكملي: «سأطبّق غدًا في صفّي…»',ph:'سأطبّق غدًا…'}
+ exit:{t:'بطاقة الخروج',c:'#0B7A70',h:'٣ - ٢ - ١',p:'اكتبي ٣ أفكار خرجتِ بها، و٢ ستطبّقينها هذا الأسبوع، وسؤالًا ما زال معكِ.',ph:'٣ أفكار: …\n٢ سأطبّقها: …\n١ سؤال: …'}
 };
 const qs=new URLSearchParams(location.search);
 let cur=qs.get('s')&&SEC[qs.get('s')]?qs.get('s'):'open';
@@ -115,9 +115,9 @@ function norm(w){return w.replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').rep
 function draw(docs){const s=SEC[cur];$('count').textContent=docs.length?`${docs.length} مشاركة`:'';
  if(!docs.length){$('wall').innerHTML='<div class="empty">الحائط ينتظر أول مشاركة ✨</div>';return;}
  if(s.cloud){const scr=document.body.classList.contains('screen');const cols=['#C4412B','#0B7A70','#5238C9','#E0A21B','#0E1A3A'];
-  const cl=f=>{const m={};docs.forEach(d=>{const w=(d[f]||'').trim();if(!w)return;const k=norm(w);if(!m[k])m[k]={w,n:0};m[k].n++;});const arr=Object.values(m).sort((a,b)=>b.n-a.n);const mx=arr[0]?arr[0].n:1;
-   return arr.length?`<div class="cloud">${arr.map((o,i)=>`<span style="font-size:${(scr?(s.two?24:30):(s.two?17:20))+Math.round((o.n/mx)*(scr?(s.two?50:70):(s.two?26:36)))}px;color:${cols[i%cols.length]}">${esc(o.w)}</span>`).join('')}</div>`:'<div class="cloud" style="color:#8a8fa3;font-size:16px">بانتظار الإجابات…</div>';};
-  $('wall').innerHTML=s.two?`<div class="clouds"><div><h3>ماذا تتوقعين أن تتعلمي؟</h3>${cl('t')}</div><div><h3>ماذا تأملين؟</h3>${cl('t2')}</div></div>`:cl('t');return;}
+  const STOP=new Set(['ان','أن','إن','كيف','في','من','على','الى','إلى','عن','ما','ماذا','لماذا','او','أو','ثم','هي','هو','لي','كي','لكي','مع','هذا','هذه','ذلك','تلك','التي','الذي','يكون','تكون','اكون','أكون','اتعلم','أتعلم','أتعلّم','اتعلّم','نتعلم','كل','بعض','جدا','جدًا','عند','لا','قد','به','بها','له','لها','و']);const hs=s=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))%997;return x;};const cl=f=>{const m={};docs.forEach(d=>{const w=(d[f]||'').replace(/[،,.؟?!:؛"«»]/g,' ').replace(/\s+/g,' ').trim();if(!w)return;const k=w.split(' ').map(norm).join(' ');if(!m[k])m[k]={w,n:0};m[k].n++;});let arr=Object.values(m).sort((a,b)=>b.n-a.n||hs(a.w)-hs(b.w));const mx=arr[0]?arr[0].n:1;const mid=[];arr.forEach((o,i)=>{i%2?mid.push(o):mid.unshift(o);});arr=mid;
+   return arr.length?`<div class="cloud">${arr.map((o,i)=>`<span style="white-space:nowrap;font-size:calc(var(--k,1) * ${(scr?(s.two?24:30):(s.two?17:20))+Math.round(((o.n/mx)*0.7+(hs(o.w)%4)/14)*(scr?(s.two?50:70):(s.two?26:36)))}px);color:${cols[hs(o.w)%cols.length]}">${esc(o.w)}</span>`).join('')}</div>`:'<div class="cloud" style="color:#8a8fa3;font-size:16px">بانتظار الإجابات…</div>';};
+  $('wall').innerHTML=s.two?`<div class="clouds"><div><h3>ماذا تتوقعين أن تتعلمي؟</h3>${cl('t')}</div><div><h3>ماذا تأملين؟</h3>${cl('t2')}</div></div>`:cl('t');fitCloud();return;}
  const liked=JSON.parse(store('wall_likes')||'[]');
  $('wall').innerHTML='<div class="grid">'+docs.map((d,i)=>{const gi=GROUPS.indexOf(d.who);const bg=['#FFE6DF','#DDF4F0','#ECE8FF','#FFF1CF'][(gi>=0?gi:i)%4];
   return `<div class="note" style="background:${bg}"><button class="del" data-id="${d.id}" title="حذف">✕</button>${d.who?`<div class="who" style="color:${s.c}">${esc(d.who)}</div>`:''}${d.t?`<div class="tx">${esc(d.t)}</div>`:''}${d.img?`<img src="${d.img}" alt="صورة المشاركة">`:''}
@@ -130,6 +130,8 @@ function like(id){const L=JSON.parse(store('wall_likes')||'[]');const on=L.inclu
  store('wall_likes',JSON.stringify(on?L.filter(x=>x!==id):[...L,id]));}
 $('zoom').onclick=()=>$('zoom').style.display='none';
 $('toScreen').onclick=()=>{const u=new URL(location);u.searchParams.set('screen','1');u.searchParams.set('s',cur);location.href=u;};
+function fitCloud(){const W=$('wall');let k=1;W.style.setProperty('--k',1);if(!document.body.classList.contains('screen'))return;const over=()=>W.getBoundingClientRect().bottom>innerHeight-12;while(over()&&k>0.35){k*=0.9;W.style.setProperty('--k',k.toFixed(3));}}
+addEventListener('resize',()=>{if(SEC[cur].cloud)fitCloud();});
 function render(){tabs();ask();if(unsub)unsub();if(!db){$('wall').innerHTML='<div class="empty">تعذّر الاتصال بالحائط، تأكدي من الإنترنت</div>';return;}
  const sec=cur;unsub=db.collection(COL).where('s','==',sec).onSnapshot(q=>{if(sec!==cur)return;const docs=q.docs.map(d=>({id:d.id,...d.data()}));
   docs.sort((a,b)=>((b.at&&b.at.seconds)||9e9)-((a.at&&a.at.seconds)||9e9));draw(docs);},()=>{$('wall').innerHTML='<div class="empty">تعذّر تحميل الحائط</div>';});}
