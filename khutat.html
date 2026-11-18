@@ -115,6 +115,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.7}
 .pp .scard .sf{font-size:12px;color:#4A5170;font-weight:700}
 .pp .nm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
 .pp .nm div{border-bottom:1.5px solid #141B3D;padding-bottom:4px;font-weight:700}
+footer.cr{max-width:980px;margin:0 auto;padding:6px 14px 34px;text-align:center;color:var(--muted);font-size:14px;line-height:1.9}footer.cr .st{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:6px 18px;margin-bottom:10px;color:var(--navy);font-weight:700;font-size:15px}footer.cr .st b{color:var(--teal);font-size:20px;font-weight:800}footer.cr .nm{color:var(--navy);font-weight:800}@media print{footer.cr{display:none}}
 </style>
 </head>
 <body>
@@ -200,6 +201,7 @@ textarea{min-height:90px;resize:vertical;line-height:1.7}
   </div>
 </section>
 </main>
+<footer class="cr"><div class="st" id="statBox" hidden>📊 عدد الخطط المولّدة: <b id="statN">…</b></div><div>تصميم وإعداد: <span class="nm">المعلمة عبير الخماش</span> — مجمع الفيضة التعليمي</div><div>جميع الحقوق محفوظة © ١٤٤٨هـ</div></footer>
 <div id="pdfwrap"></div>
 <script>/*!
 * html2canvas-pro 2.5.0 <https://yorickshan.github.io/html2canvas-pro/>
@@ -2761,7 +2763,7 @@ function groups(){const G=[];['rem','enr'].forEach(k=>{if(!M[k])return;G.push(bl
 function preview(){if(!M)return;const w=$('pvin');w.innerHTML='';paginate(groups(),w);fit();}
 function fit(){const W=$('pv').clientWidth;const s=Math.min(1,W/794);const w=$('pvin');w.style.transform=`scale(${s})`;w.style.width='794px';$('pv').style.height=(w.scrollHeight*s)+'px';}
 addEventListener('resize',()=>{if(M)fit();});
-$('gen').onclick=()=>{const m=build();if(!m)return;M=m;$('edRem').innerHTML='';$('edEnr').innerHTML='';
+$('gen').onclick=()=>{const m=build();if(!m)return;M=m;try{window.__countPlan&&window.__countPlan();}catch(e){}$('edRem').innerHTML='';$('edEnr').innerHTML='';
   if(M.rem)edFor('rem','#FF6B57');if(M.enr)edFor('enr','#7B61FF');
   $('edit').classList.remove('hide');$('pvCard').classList.remove('hide');
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(preview);else preview();
@@ -2877,6 +2879,19 @@ function buildDocx(){let b='';let first=true;['rem','enr'].forEach(k=>{if(M[k]){
     ['_rels/.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
     ['word/_rels/document.xml.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/></Relationships>'],
     ['word/styles.xml',styles],['word/settings.xml',settings],['word/document.xml',doc]]);}
+/* stats */
+(function(){let ref=null,pend=0;
+const CFG={apiKey:"AIzaSyA8feIuu619z53rYQ4soTE15E0wD2x4k1k",authDomain:"chem-labs-3c9de.firebaseapp.com",projectId:"chem-labs-3c9de",storageBucket:"chem-labs-3c9de.firebasestorage.app",messagingSenderId:"396927110815",appId:"1:396927110815:web:e569138e0fca5e94b39caa"};
+const ld=s=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=s;e.onload=ok;e.onerror=no;document.head.appendChild(e);});
+const V='https://www.gstatic.com/firebasejs/10.12.2/';
+ld(V+'firebase-app-compat.js').then(()=>ld(V+'firebase-firestore-compat.js')).then(()=>{
+  const app=firebase.initializeApp(CFG,'khutat');ref=app.firestore().collection('khutat_stats').doc('plans');
+  ref.onSnapshot(d=>{const n=(d.exists&&d.data().n)||0;$('statN').textContent=n.toLocaleString('ar-SA');$('statBox').hidden=false;},()=>{});
+  if(pend){bump(pend);pend=0;}
+}).catch(()=>{});
+function bump(k){try{ref.set({n:firebase.firestore.FieldValue.increment(k)},{merge:true}).catch(()=>{});}catch(e){}}
+window.__countPlan=()=>{if(ref)bump(1);else pend++;};
+})();
 $('word').onclick=()=>{if(M)saveFile(fname('docx'),buildDocx());};
 </script>
 </body>
